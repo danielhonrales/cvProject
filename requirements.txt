@@ -1,0 +1,7 @@
+teachable-machine==1.1
+Flask==3.0.0
+opencv-contrib-python==4.8.1.78
+opencv-python==4.8.1
+pillow==10.0.1
+numpy==1.26.2
+keras==2.15.0
