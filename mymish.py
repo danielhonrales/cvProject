@@ -152,50 +152,50 @@ def preprocess_image(image):
 
 
 
-IM_WIDTH = 1280
-IM_HEIGHT = 720 
-FRAME_RATE = 10
+# IM_WIDTH = 1280
+# IM_HEIGHT = 720 
+# FRAME_RATE = 10
 
 
-font = cv2.FONT_HERSHEY_SIMPLEX
-videostream = VideoStream.VideoStream((1280,720),10,1,0).start()
-cam = cv2.VideoCapture(0)
-time.sleep(1) 
-cam_quit = 0 
+# font = cv2.FONT_HERSHEY_SIMPLEX
+# videostream = VideoStream.VideoStream((1280,720),10,1,1).start()
+# cam = cv2.VideoCapture(0)
+# time.sleep(1) 
+# cam_quit = 0 
 
-while cam_quit == 0:
-    image = videostream.read()
+# while cam_quit == 0:
+#     image = videostream.read()[1]
     
-    pre_proc = preprocess_image(image)    
-    cnts_sort, cnt_is_card = find_cards(pre_proc)
+#     pre_proc = preprocess_image(image)    
+#     cnts_sort, cnt_is_card = find_cards(pre_proc)
 
-    if len(cnts_sort) != 0:       
-        cards = []
-        k = 0
+#     if len(cnts_sort) != 0:       
+#         cards = []
+#         k = 0
 
-        for i in range(len(cnts_sort)):
-            if (cnt_is_card[i] == True):
-                cards.append(cardpoc(cnts_sort[i],image))
-                k = k + 1
+#         for i in range(len(cnts_sort)):
+#             if (cnt_is_card[i] == True):
+#                 cards.append(cardpoc(cnts_sort[i],image))
+#                 k = k + 1
 	    
-        if (len(cards) != 0):
-            temp_cnts = []
-            for i in range(len(cards)):
-                temp_cnts.append(cards[i].outline)
-            cv2.drawContours(image,temp_cnts, -1, (255,0,0), 2)
-            cv2.imshow("warp display",cards[i].subimage)
-            print("warp display")
+#         if (len(cards) != 0):
+#             temp_cnts = []
+#             for i in range(len(cards)):
+#                 temp_cnts.append(cards[i].outline)
+#             cv2.drawContours(image,temp_cnts, -1, (255,0,0), 2)
+#             cv2.imshow("warp display",cards[i].subimage)
+#             print("warp display")
         
     
-    cv2.imshow("Card Detector",image)
+#     cv2.imshow("Card Detector",image)
     
     
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord("q"):
-        cam_quit = 1
+#     key = cv2.waitKey(1) & 0xFF
+#     if key == ord("q"):
+#         cam_quit = 1
         
-cv2.destroyAllWindows()
-videostream.stop()
+# cv2.destroyAllWindows()
+# videostream.stop()
 
 
 

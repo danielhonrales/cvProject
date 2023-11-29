@@ -30,7 +30,11 @@ class VideoStream:
                 (self.grabbed, self.frame) = self.stream.read()
 
     def read(self):
-        return self.frame
+        return (self.grabbed, self.frame)
+
+    def isOpened(self):
+        # Return true if camera has been initialized
+        return self.stream.isOpened()
 
     def stop(self):
         self.stopped = True

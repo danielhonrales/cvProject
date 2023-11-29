@@ -1,12 +1,28 @@
+from flask import Flask, render_template, Response, jsonify
 from keras.models import load_model  # TensorFlow is required for Keras to work
 from PIL import Image, ImageOps  # Install pillow instead of PIL
-import cv2 as cv
-from flask import Flask, render_template, Response, jsonify
+from termcolor import colored
+import mymish as obj_det
 import numpy as np
+import VideoStream
+import cv2 as cv
+import os
+
+###################################
+#           CAMERA PORT           #
+#     USE 0 FOR DEFAULT CAMERA    #
+# USE 1 FOR CONTINUITY CAM ON MAC #
+PORT = 1
+###################################
+
 
 model = load_model("model/keras_Model.h5", compile=False)
 class_names = open("model/labels.txt", "r").readlines()
-camera = cv.VideoCapture(0)
+camera = VideoStream.VideoStream((1280,720),10,2,PORT).start()
+# camera = cv.VideoCapture(PORT)
+if not camera.isOpened():
+	print(colored("Camera not found", "green"), colored("Exiting...", "red"), sep="\n") 
+	os._exit(1) # Exits all threads (important if using VideoStream.py)
 app = Flask(__name__)
 classification = {"confidence": "Unconfident", "class": "Test"}
 
@@ -50,9 +66,30 @@ def classifier(box):
 
 # Returns frame after changing it
 # Intended to be used to add bounding boxes
-def object_detection(frame):
-	# frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-	return frame
+# RETURNS: frame, cards [frame with bounding box, list of cards detected]
+def object_detection(frame):  
+	pre_proc = obj_det.preprocess_image(frame)    
+	cnts_sort, cnt_is_card = obj_det.find_cards(pre_proc)
+
+    # cv.imshow("pre_proc",pre_proc)
+	cards = []
+	if len(cnts_sort) != 0:       
+		k = 0
+
+		for i in range(len(cnts_sort)):
+			if (cnt_is_card[i] == True):
+				cards.append(obj_det.cardpoc(cnts_sort[i],frame))
+				k = k + 1
+
+		if (len(cards) != 0):
+			temp_cnts = []
+			for i in range(len(cards)):
+				temp_cnts.append(cards[i].outline)
+			cv.drawContours(frame,temp_cnts, -1, (255,0,0), 2)
+			# cv.imshow("warp display",cards[i].subimage)
+
+	# cv.imshow("Card Detector",frame)
+	return [frame, cards]
 
 # Returns frame after changing it
 # Intended to add add AR effects
@@ -69,9 +106,9 @@ def gen_frames():
 			break
 		else:
 			# Get Image with Bounding Box
-			frame = object_detection(frame)
+			frame, cards = object_detection(frame)
 			# Get type of card 
-			classifier(frame)
+			if len(cards) > 0: classifier(cards[0].subimage)
 			# Add AR effects
 			# frame = ar_effects(frame)
 
