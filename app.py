@@ -7,14 +7,18 @@ import numpy as np
 import VideoStream
 import cv2 as cv
 import os
+import pygame
+from pygame.locals import *
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from extractModelData import *
 
 ###################################
 #           CAMERA PORT           #
 #     USE 0 FOR DEFAULT CAMERA    #
 # USE 1 FOR CONTINUITY CAM ON MAC #
-PORT = 1
+PORT = 0
 ###################################
-
 
 model = load_model("model/keras_Model.h5", compile=False)
 class_names = open("model/labels.txt", "r").readlines()
@@ -107,8 +111,15 @@ def gen_frames():
 		else:
 			# Get Image with Bounding Box
 			frame, cards = object_detection(frame)
-			# Get type of card 
-			if len(cards) > 0: classifier(cards[0].subimage)
+			# Get type of card
+			if len(cards) > 0:
+				classifier(cards[0].subimage)
+				# Create new model info files
+				with open('.\classification.txt', 'w+') as file:
+					file.write(classification['class'].lower())
+					file.close()
+				cv.imwrite('frame.jpg', frame)
+        
 			# Add AR effects
 			# frame = ar_effects(frame)
 
@@ -116,6 +127,25 @@ def gen_frames():
 			ret, buffer = cv.imencode('.jpg', frame)
 			frame = buffer.tobytes()
 			yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
+
+def drawModel(vertices, faces):
+    colors = [     #colors for our faces
+		(0,255,0), #green
+		(255,0,0), #red
+		(255,255,0), #yellow
+		(0,255,255), #cyan
+		(0,0,255), #blue
+		(255,255,255) #white
+	]
+    #glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) #clears each frame
+    glBegin(GL_TRIANGLES)  #drawing method
+    for face in faces:
+        color = 0
+        for vertexIndex in face:
+            color = (color + 1) % 5
+            glColor3fv(colors[color])
+            glVertex3fv(vertices[vertexIndex - 1])
+    glEnd()
 
 # Video feed
 @app.route('/video_feed')
@@ -133,7 +163,7 @@ def index():
 	return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(port="8000", debug=True)
+	app.run(port="8000", debug=True)
 
 # Run app
 # flask --app app run   
