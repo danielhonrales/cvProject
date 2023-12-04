@@ -20,8 +20,11 @@ from extractModelData import *
 PORT = 0
 ###################################
 
-model = load_model("model/keras_Model.h5", compile=False)
-class_names = open("model/labels.txt", "r").readlines()
+model_path = os.path.join(os.getcwd(), "classifier", "keras_Model.h5")
+label_path = os.path.join(os.getcwd(), "classifier", "labels.txt")
+
+model = load_model(model_path, compile=False)
+class_names = open(label_path, "r").readlines()
 camera = VideoStream.VideoStream((1280,720),10,2,PORT).start()
 # camera = cv.VideoCapture(PORT)
 if not camera.isOpened():
@@ -115,7 +118,7 @@ def gen_frames():
 			if len(cards) > 0:
 				classifier(cards[0].subimage)
 				# Create new model info files
-				with open('.\classification.txt', 'w+') as file:
+				with open('classification.txt', 'w+') as file:
 					file.write(classification['class'].lower())
 					file.close()
 				cv.imwrite('frame.jpg', frame)

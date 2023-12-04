@@ -30,7 +30,7 @@ def moveModel():
         glRotate(0, 1, 0, 0)
 
 def getClassification():
-    classificationPath = '.\classification.txt'
+    classificationPath = 'classification.txt'
     classification = None
     # Check if classification file exists
     if not os.path.isfile(classificationPath):
@@ -104,7 +104,7 @@ while True:
     
     classification = getClassification()
     if classification != None:
-        modelFile = f".\Models\{classification}\{classification}.obj"
+        modelFile = os.path.join("Models", f"{classification}", f"{classification}.obj")
         vertices, faces = extractModelData(modelFile)
         drawModel(vertices, faces)
     else:
