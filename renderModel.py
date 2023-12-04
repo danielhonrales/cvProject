@@ -43,7 +43,7 @@ def getClassification():
                 if line != 'Unconfident':
                     classification = line
     #return classification.lower()
-    return 'cubone'
+    return classification
 
 def drawImg(imagePath):
     startlen = 0
