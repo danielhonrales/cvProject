@@ -109,7 +109,6 @@ while True:
         drawModel(vertices, faces)
     else:
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
-    
     #drawImg('frame.jpg')
     moveModel()
     FPS.tick(60)
