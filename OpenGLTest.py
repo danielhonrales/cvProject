@@ -130,7 +130,8 @@ class OpenGLGlyphs:
 
 		# Project and Render 3D model
 		print('Rendering 3D pokemon model')
-		self.render3dModel(cards, extrinsics, self.classification['class'].lower())
+		if len(cards) > 0:
+			self.render3dModel(cards, extrinsics, self.classification['class'].lower())
 
 		glutSwapBuffers()
 
