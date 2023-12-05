@@ -28,7 +28,7 @@ def MTL(path, filename):
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_RGBA,
                 GL_UNSIGNED_BYTE, image)
         else:
-            mtl[values[0]] = map(float, values[1:])
+            mtl[values[0]] = [float(val) for val in values[1:]]
     return contents
 
 class OBJ:
@@ -45,17 +45,19 @@ class OBJ:
             values = line.split()
             if not values: continue
             if values[0] == 'v':
-                v = map(float, values[1:4])
+                v = [float(val) for val in values[1:4]]
                 if swapyz:
                     v = v[0], v[2], v[1]
                 self.vertices.append(v)
             elif values[0] == 'vn':
-                v = map(float, values[1:4])
+                #v = map(float, values[1:4])
+                v = [float(val) for val in values[1:4]]
                 if swapyz:
                     v = v[0], v[2], v[1]
                 self.normals.append(v)
             elif values[0] == 'vt':
-                self.texcoords.append(map(float, values[1:3]))
+                textcoords = [float(val) for val in values[1:3]]
+                self.texcoords.append(textcoords)
             elif values[0] in ('usemtl', 'usemat'):
                 material = values[1]
             elif values[0] == 'mtllib':
@@ -94,7 +96,7 @@ class OBJ:
 
             glBegin(GL_POLYGON)
             for i in range(len(vertices)):
-                print(self.normals[normals[i] - 1])
+                #print(self.normals[normals[i] - 1])
                 if normals[i] > 0:
                     glNormal3fv(self.normals[normals[i] - 1])
                 if texture_coords[i] > 0:

@@ -35,6 +35,10 @@ class OpenGLGlyphs:
 		# init models
 		self.cuboneModel = None
 		self.charmeleonModel = None
+		self.classification = {
+			'class': 'None',
+			'confidence': 0
+		}
 
 		self.main()
 
@@ -74,7 +78,7 @@ class OpenGLGlyphs:
 		# Load model objs
 		print('Loading models')
 		self.cuboneModel = OBJ(os.path.join("Models", "cubone"), "cubone.obj")
-		self.charmeleonModel = OBJ(os.path.join("Models", "charmeleon"), "charmeleon.obj")
+		#self.charmeleonModel = OBJ(os.path.join("Models", "charmeleon"), "charmeleon.obj")
 
 		# assign texture
 		glEnable(GL_TEXTURE_2D)
@@ -99,10 +103,11 @@ class OpenGLGlyphs:
   
   		# Get frame with card and extrinsics
 		print('Finding cards')
-		image, cards, extrinsics = self.gen_frames(image)
+		procImage, cards, extrinsics = self.gen_frames(image)
 
 		# convert image to OpenGL texture format
 		print('Drawing background')
+		cv2.imwrite(os.path.join('images', 'detected.jpg'), procImage)
 		bg_image = cv2.flip(image, 0)
 		bg_image = Image.fromarray(bg_image)     
 		ix = bg_image.size[0]
@@ -125,7 +130,7 @@ class OpenGLGlyphs:
 
 		# Project and Render 3D model
 		print('Rendering 3D pokemon model')
-		self.render3dModel(cards, extrinsics, classification['class'].lower())
+		self.render3dModel(cards, extrinsics, self.classification['class'].lower())
 
 		glutSwapBuffers()
 
@@ -208,8 +213,6 @@ class OpenGLGlyphs:
 			self.classifier(cards[0].subimage)
 
 		# Stream results
-		ret, buffer = cv2.imencode('.jpg', frame)
-		frame = buffer.tobytes()
 		return frame, cards, extrinsics
  
 	# Returns frame after changing it
@@ -274,9 +277,10 @@ class OpenGLGlyphs:
 		print("Class:", class_name[2:], end="")
 		print("Confidence Score:", confidence_score)
 
-		global classification
+		classification = {}
 		classification["class"] = str(class_name[2:])
 		classification["confidence"] = str(confidence_score)
+		self.classification = classification
 
 
 		return classification
