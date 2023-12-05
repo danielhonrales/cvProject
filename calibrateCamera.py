@@ -13,10 +13,8 @@ objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 images = glob.glob(os.path.join('poseImages', '*.jpg'))
 
-counter = 0
 validSum = 0
 for fname in images:
-    counter += 1
     img = cv.imread(fname)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     # Find the chess board corners
@@ -24,7 +22,7 @@ for fname in images:
     # If found, add object points, image points (after refining them)
     if ret == True:
         validSum += 1
-        print(f'Image {counter}')
+        print(f'Image {fname}')
         objpoints.append(objp)
         corners2 = cv.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
         imgpoints.append(corners2)

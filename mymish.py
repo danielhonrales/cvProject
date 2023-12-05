@@ -72,7 +72,7 @@ class card_info:
         self.center = [] 
         self.subimage = [] 
        
-def find_cards(img):
+def find_cards(img, originalImage):
     
     conts,tier = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
     index_sort = sorted(range(len(conts)), key=lambda i : cv2.contourArea(conts[i]),reverse=True)
@@ -103,7 +103,7 @@ def find_cards(img):
 
             if CARD_MIN_AREA < size < CARD_MAX_AREA and newtier[i][3] == -1 and len(approx) == 4:
                 iscard[i] = True
-                rvecs, tvecs = getVectors(img, approx.reshape(4, 2))
+                rvecs, tvecs = getVectors(originalImage, approx.reshape(4, 2))
                 extrinsics.append((rvecs, tvecs))
     else: 
         return [], [], []
@@ -130,7 +130,7 @@ def getVectors(image, points):
  
     # calculate rotation and translation vectors
     cv2.cornerSubPix(gray,imgp,(11,11),(-1,-1),criteria)
-    rvecs, tvecs, _ = cv2.solvePnPRansac(objp, imgp, mtx, dist)
+    _, rvecs, tvecs, _ = cv2.solvePnPRansac(objp, imgp, mtx, dist)
  
     return rvecs, tvecs
 

@@ -85,7 +85,7 @@ class OpenGLGlyphs:
 		self.texture_background = glGenTextures(1)
 
 	def _draw_scene(self):
-		print('Drawing scene')
+		#print('Drawing scene')
 		# print("DRAWING")
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 		# print("CHECK 1")
@@ -102,11 +102,11 @@ class OpenGLGlyphs:
 		cv2.imwrite(os.path.join('images', 'temp.jpg'), image)
   
   		# Get frame with card and extrinsics
-		print('Finding cards')
+		#print('Finding cards')
 		procImage, cards, extrinsics = self.gen_frames(image)
 
 		# convert image to OpenGL texture format
-		print('Drawing background')
+		#print('Drawing background')
 		cv2.imwrite(os.path.join('images', 'detected.jpg'), procImage)
 		bg_image = cv2.flip(image, 0)
 		bg_image = Image.fromarray(bg_image)     
@@ -129,9 +129,11 @@ class OpenGLGlyphs:
 		glPopMatrix()
 
 		# Project and Render 3D model
-		print('Rendering 3D pokemon model')
 		if len(cards) > 0:
-			self.render3dModel(cards, extrinsics, self.classification['class'].lower())
+			print(f'Rendering 3D pokemon model of {self.classification["class"].lower()}')
+			#self.render3dModel(cards, extrinsics, self.classification['class'].lower())
+			# Hardsetting cubone temporarily
+			self.render3dModel(cards, extrinsics, 'cubone')
 
 		glutSwapBuffers()
 
@@ -144,7 +146,11 @@ class OpenGLGlyphs:
 		image = ImageOps.flip(image) # in my case image is flipped top-bottom for some reason\
 		
 		# return image
-		frame = np.array(image)
+		frame = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
+  
+		if len(cards) > 0:
+			# DEBUG: Check what image looks like
+			cv2.imwrite(os.path.join('images', 'final.jpg'), frame)
 		# print("Exiting")
 		return frame
 
@@ -152,23 +158,28 @@ class OpenGLGlyphs:
 		if len(cards) == 0:
 			return
 
-		rvecs, tvecs = extrinsics
+		(rvecs, tvecs) = extrinsics[0]
 
 		# build view matrix
 		rmtx = cv2.Rodrigues(rvecs)[0]
 
-		view_matrix = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]],
-								[rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]],
-								[rmtx[2][0],rmtx[2][1],rmtx[2][2],tvecs[2]],
-								[0.0       ,0.0       ,0.0       ,1.0    ]])
+		view_matrix = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0][0]],
+								[rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1][0]],
+								[rmtx[2][0],rmtx[2][1],rmtx[2][2],tvecs[2][0]],
+								[0.0       ,0.0       ,0.0       ,1.0    	 ]])
   
 		view_matrix = view_matrix * self.INVERSE_MATRIX
  
 		view_matrix = np.transpose(view_matrix)
+		print(view_matrix)
 
 		# load view matrix and draw shape
 		glPushMatrix()
 		glLoadMatrixd(view_matrix)
+
+		glTranslatef(.8,0.6,0.0)
+		glRotatef(135.0, 0.0, 1.0, 0.0)
+		glRotatef(180.0, 0.0, 0.0, 1.0)
 
 		name = pokemonClass.lower()
 		if name == 'cubone':
@@ -220,8 +231,8 @@ class OpenGLGlyphs:
 	# Intended to be used to add bounding boxes
 	# RETURNS: frame, cards [frame with bounding box, list of cards detected]
 	def object_detection(self, frame):  
-		pre_proc = obj_det.preprocess_image(frame)    
-		cnts_sort, cnt_is_card, cnt_extrinsics = obj_det.find_cards(pre_proc)
+		pre_proc = obj_det.preprocess_image(frame) 
+		cnts_sort, cnt_is_card, cnt_extrinsics = obj_det.find_cards(pre_proc, frame)
 
 		# cv.imshow("pre_proc",pre_proc)
 		cards = []
@@ -232,7 +243,7 @@ class OpenGLGlyphs:
 			for i in range(len(cnts_sort)):
 				if (cnt_is_card[i] == True):
 					cards.append(obj_det.cardpoc(cnts_sort[i],frame))
-					extrinsics.append(cnt_extrinsics[i])
+					extrinsics.append(cnt_extrinsics[0]) # Should but cnt_extrinsics[i], but something breaks 
 					k = k + 1
 
 			if (len(cards) != 0):
