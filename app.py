@@ -7,11 +7,7 @@ import numpy as np
 import VideoStream
 import cv2 as cv
 import os
-import pygame
-from pygame.locals import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from extractModelData import *
+import OpenGLTest as ar
 
 ###################################
 #           CAMERA PORT           #
@@ -25,6 +21,7 @@ label_path = os.path.join(os.getcwd(), "classifier", "labels.txt")
 
 model = load_model(model_path, compile=False)
 class_names = open(label_path, "r").readlines()
+ar_obj = ar.OpenGLGlyphs()
 camera = VideoStream.VideoStream((1280,720),10,2,PORT).start()
 # camera = cv.VideoCapture(PORT)
 if not camera.isOpened():
@@ -67,8 +64,12 @@ def classifier(box):
 	print("Confidence Score:", confidence_score)
 
 	global classification
-	classification["class"] = str(class_name[2:])
+	# FIX THIS: Temp forcing charmeleon
+	classification["class"] = "charmeleon"
+	# classification["class"] = str(class_name[2:])
 	classification["confidence"] = str(confidence_score)
+
+
 	return classification
 
 # Returns frame after changing it
@@ -101,7 +102,10 @@ def object_detection(frame):
 # Returns frame after changing it
 # Intended to add add AR effects
 def ar_effects(frame):
-	# frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+	print("AR START")
+	frame = ar_obj._draw_scene(frame)
+	cv.imwrite('ar_test.jpg', frame)
+	# frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
 	return frame
 
 # Generates frames from camera
@@ -124,31 +128,13 @@ def gen_frames():
 				cv.imwrite('frame.jpg', frame)
         
 			# Add AR effects
-			# frame = ar_effects(frame)
+			frame = ar_effects(frame)
 
 			# Stream results
 			ret, buffer = cv.imencode('.jpg', frame)
 			frame = buffer.tobytes()
 			yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
-def drawModel(vertices, faces):
-    colors = [     #colors for our faces
-		(0,255,0), #green
-		(255,0,0), #red
-		(255,255,0), #yellow
-		(0,255,255), #cyan
-		(0,0,255), #blue
-		(255,255,255) #white
-	]
-    #glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) #clears each frame
-    glBegin(GL_TRIANGLES)  #drawing method
-    for face in faces:
-        color = 0
-        for vertexIndex in face:
-            color = (color + 1) % 5
-            glColor3fv(colors[color])
-            glVertex3fv(vertices[vertexIndex - 1])
-    glEnd()
 
 # Video feed
 @app.route('/video_feed')
