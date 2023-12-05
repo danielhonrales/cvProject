@@ -77,16 +77,18 @@ def classifier(box):
 # RETURNS: frame, cards [frame with bounding box, list of cards detected]
 def object_detection(frame):  
 	pre_proc = obj_det.preprocess_image(frame)    
-	cnts_sort, cnt_is_card = obj_det.find_cards(pre_proc)
+	cnts_sort, cnt_is_card, cnt_extrinsics = obj_det.find_cards(pre_proc)
 
     # cv.imshow("pre_proc",pre_proc)
 	cards = []
+	extrinsics = []
 	if len(cnts_sort) != 0:       
 		k = 0
 
 		for i in range(len(cnts_sort)):
 			if (cnt_is_card[i] == True):
 				cards.append(obj_det.cardpoc(cnts_sort[i],frame))
+				extrinsics.append(cnt_extrinsics[i])
 				k = k + 1
 
 		if (len(cards) != 0):
@@ -97,13 +99,13 @@ def object_detection(frame):
 			# cv.imshow("warp display",cards[i].subimage)
 
 	# cv.imshow("Card Detector",frame)
-	return [frame, cards]
+	return [frame, cards, extrinsics]
 
 # Returns frame after changing it
 # Intended to add add AR effects
-def ar_effects(frame):
+def ar_effects(frame, extrinsics):
 	print("AR START")
-	frame = ar_obj._draw_scene(frame)
+	frame = ar_obj._draw_scene(frame, extrinsics)
 	cv.imwrite('ar_test.jpg', frame)
 	# frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
 	return frame
@@ -117,7 +119,7 @@ def gen_frames():
 			break
 		else:
 			# Get Image with Bounding Box
-			frame, cards = object_detection(frame)
+			frame, cards, extrinsics = object_detection(frame)
 			# Get type of card
 			if len(cards) > 0:
 				classifier(cards[0].subimage)
@@ -127,8 +129,8 @@ def gen_frames():
 					file.close()
 				cv.imwrite('frame.jpg', frame)
         
-			# Add AR effects
-			frame = ar_effects(frame)
+				# Add AR effects
+				frame = ar_effects(frame, extrinsics[0])
 
 			# Stream results
 			ret, buffer = cv.imencode('.jpg', frame)

@@ -83,6 +83,7 @@ def find_cards(img):
 
         newcont = []
         newtier = []
+        extrinsics = []
         iscard = np.zeros(len(conts),dtype=bool)
 
 
@@ -102,10 +103,50 @@ def find_cards(img):
 
             if CARD_MIN_AREA < size < CARD_MAX_AREA and newtier[i][3] == -1 and len(approx) == 4:
                 iscard[i] = True
+                rvecs, tvecs = getVectors(img, approx.reshape(4, 2))
+                extrinsics.append((rvecs, tvecs))
     else: 
-        return [], []
+        return [], [], []
 
-    return newcont, iscard
+    return newcont, iscard, extrinsics
+
+def getVectors(image, points):
+    # order points
+    points = order_points(points)
+ 
+    # load calibration data
+    with np.load('cameraCalibration.npz') as X:
+        mtx, dist, _, _ = [X[i] for i in ('mtx','dist','rvecs','tvecs')]
+   
+    # set up criteria, image, points and axis
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+ 
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+ 
+    imgp = np.array(points, dtype="float32")
+ 
+    objp = np.array([[0.,0.,0.],[1.,0.,0.],
+                        [1.,1.,0.],[0.,1.,0.]], dtype="float32")  
+ 
+    # calculate rotation and translation vectors
+    cv2.cornerSubPix(gray,imgp,(11,11),(-1,-1),criteria)
+    rvecs, tvecs, _ = cv2.solvePnPRansac(objp, imgp, mtx, dist)
+ 
+    return rvecs, tvecs
+
+def order_points(points):
+ 
+    s = points.sum(axis=1)
+    diff = np.diff(points, axis=1)
+     
+    ordered_points = np.zeros((4,2), dtype="float32")
+ 
+    ordered_points[0] = points[np.argmin(s)]
+    ordered_points[2] = points[np.argmax(s)]
+    ordered_points[1] = points[np.argmin(diff)]
+    ordered_points[3] = points[np.argmax(diff)]
+ 
+    return ordered_points
 
 def cardpoc(cont, image):
     currentcard = card_info()
