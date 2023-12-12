@@ -220,7 +220,7 @@ class PokemonAR:
 		glutInit(sys.argv)
 		glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
 		glutInitWindowSize(self.width, self.height)
-		glutCreateWindow(b"OpenGL Offscreen")
+		glutCreateWindow(b"Pop-out Pokemon")
 		# glutHideWindow()
 		glutDisplayFunc(self._draw_scene)
 		glutIdleFunc(self._draw_scene)
@@ -245,8 +245,8 @@ class PokemonAR:
 	# Intended to be used to add bounding boxes
 	# RETURNS: frame, cards [frame with bounding box, list of cards detected]
 	def object_detection(self, frame):  
-		pre_proc = obj_det.preprocess_image(frame) 
-		cnts_sort, cnt_is_card, cnt_extrinsics = obj_det.find_cards(pre_proc, frame)
+		pre_proc = obj_det.procimg(frame) 
+		cnts_sort, cnt_is_card, cnt_extrinsics = obj_det.locard(pre_proc, frame)
 
 		# cv.imshow("pre_proc",pre_proc)
 		cards = []
