@@ -21,7 +21,7 @@ class PokemonAR:
 
 	def __init__(self):
 		# initialise webcam and start thread
-		self.webcam = VideoStream.VideoStream((self.width,self.height),10,2,0).start()
+		self.webcam = VideoStream.VideoStream(0).start()
   
 		# init model
 		model_path = os.path.join(os.getcwd(), "classifier", "keras_Model.h5")
@@ -97,10 +97,7 @@ class PokemonAR:
 		# print("CHECK 2")
 
 		# get image from webcam
-		success, image = self.webcam.read()
-		if not success:
-			print("broke")
-			return
+		image = self.webcam.read()
 
 		# DEBUG: Check what image looks like
 		cv2.imwrite(os.path.join('images', 'temp.jpg'), image)
