@@ -3,7 +3,7 @@ import cv2
 from datetime import datetime
 import os
   
-camera = VideoStream.VideoStream((1280,720),10,2,0)
+camera = VideoStream.VideoStream((640,360),10,2,2)
 camera.start()
  
 counter = 0

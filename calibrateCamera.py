@@ -11,7 +11,7 @@ objp[:,:2] = np.mgrid[0:7,0:6].T.reshape(-1,2)
 # Arrays to store object points and image points from all the images.
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
-images = glob.glob(os.path.join('poseImages', '*.jpg'))
+images = glob.glob(os.path.join('poseImages-Daniel', '*.jpg'))
 
 validSum = 0
 for fname in images:
@@ -28,7 +28,9 @@ for fname in images:
         imgpoints.append(corners2)
         # Draw and display the corners
         cv.drawChessboardCorners(img, (7,6), corners2, ret)
-        cv.imshow('img', img)
+        if fname == 'poseImages\\right.jpg':
+            cv.imshow('img', img)
+            cv.waitKey(10000)
         cv.waitKey(100)
 print(f'Total Images {validSum}')
 cv.destroyAllWindows()

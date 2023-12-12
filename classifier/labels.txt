@@ -1,10 +1,3 @@
-0 Pikachu
-1 wigglytuff
-2 charmander
-3 charmeleon
-4 Fearow
-5 snorlax
-6 metapod
-7 magneton
-8 unknown
-9 bellsprout
+0 shupet
+1 cubone
+2 garbage
